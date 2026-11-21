@@ -1,0 +1,53 @@
+{
+  "name": "jogurt-client-setup",
+  "version": "2.2.1",
+  "description": "Jogurt Client Setup — Kato-style install / update UI",
+  "author": "Jogurt",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "dev.jogurt.client.setup",
+    "productName": "Jogurt Client Setup",
+    "icon": "../build/icon.ico",
+    "directories": {
+      "output": "dist",
+      "buildResources": "../build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "icon.png"
+    ],
+    "extraResources": [
+      {
+        "from": "../assets/icon.png",
+        "to": "icon.png"
+      },
+      {
+        "from": "../assets/icon.ico",
+        "to": "icon.ico"
+      },
+      {
+        "from": "../dist/win-unpacked",
+        "to": "payload",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "icon": "../build/icon.ico",
+      "signAndEditExecutable": false,
+      "executableName": "JogurtClient-Setup"
+    },
+    "portable": {
+      "artifactName": "JogurtClient-Setup.exe"
+    }
+  }
+}

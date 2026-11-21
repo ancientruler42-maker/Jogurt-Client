@@ -1,0 +1,60 @@
+{
+  "name": "jogurt-client",
+  "version": "2.2.1",
+  "description": "Jogurt Client - FPS-focused Minecraft launcher powered by Modrinth",
+  "author": "Jogurt",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win dir portable"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.1",
+    "minecraft-launcher-core": "^3.18.2",
+    "msmc": "^5.0.5",
+    "skinview3d": "^3.4.2"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "rcedit": "^4.0.1"
+  },
+  "build": {
+    "appId": "dev.jogurt.client",
+    "productName": "Jogurt Client",
+    "icon": "build/icon.ico",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "afterPack": "./scripts/afterPack.js",
+    "files": [
+      "main.js",
+      "preload.js",
+      "discord.js",
+      "ui-pack.js",
+      "index.html",
+      "config.json",
+      "assets/**/*",
+      "mods/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      },
+      {
+        "from": "assets/icon.png",
+        "to": "icon.png"
+      }
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "executableName": "JogurtClient"
+    },
+    "portable": {
+      "artifactName": "JogurtClient-Portable.exe"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+installer/dist/
+installer/node_modules/
+.gradle/
+mods/jogurt-title/build/
+mods/jogurt-title/.gradle/

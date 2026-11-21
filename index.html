@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Jogurt Client</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://mc-heads.net https://cdn.modrinth.com">
+<style>
+:root{--bg:#0c140e;--bg2:#101b13;--card:#14221a;--card2:#1a2c21;--line:#243a2b;--g:#5fd068;--g2:#34a853;--text:#e9f3ea;--mute:#8aa48e;--r:16px;--glow:#24442c;--btntext:#06200b;--chipbg:#0c140e99;--cons:#080e0a;--bgimg:none}
+body[data-theme=guivio]{--bg:#140a0b;--bg2:#1b0e10;--card:#231214;--card2:#2e181b;--line:#4a2428;--g:#ff4b4b;--g2:#c4161c;--text:#fbeaea;--mute:#b58a8c;--glow:#5a1418;--btntext:#fff;--chipbg:#140a0b99;--cons:#0d0606}
+body[data-theme=fourth]{--bg:#07101c;--bg2:#06101acc;--card:#07121fb8;--card2:#0b1c30d6;--line:#3b9bff40;--g:#4cc9ff;--g2:#1b8fe0;--text:#eaf6ff;--mute:#9bbdd6;--glow:#1b6fb866;--btntext:#02111f;--chipbg:#04101ccc;--cons:#030a12cc;--bgimg:linear-gradient(#030a1445,#030a1490),url(assets/savitar.jpg)}
+body[data-theme=fourth] .card{backdrop-filter:blur(10px)}
+body[data-theme=fourth] #player .card,body[data-theme=fourth] .hero{background:linear-gradient(160deg,#1b6fb844,var(--card) 70%)}
+.logo{object-fit:contain}
+body[data-theme=guivio] .hero img{height:200px;width:130px;margin:0 10px}
+body[data-theme=guivio] #login img{height:280px;width:150px}
+body[data-theme=fourth] .hero img{height:210px;width:160px;margin:0 8px}
+body[data-theme=fourth] #login img{height:290px;width:215px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card.theme{padding:0;overflow:hidden;cursor:pointer;transition:.15s}.theme:hover{transform:translateY(-2px);border-color:var(--g2)}
+.theme.on{border-color:var(--g);box-shadow:0 0 0 1px var(--g) inset}
+.tprev{height:130px;position:relative;display:flex;align-items:center;justify-content:center;gap:14px;background-size:cover;background-position:center}
+.tprev img{height:96px;width:96px;object-fit:contain;filter:drop-shadow(0 8px 12px #0009)}
+.tprev i{display:block;width:70px;height:26px;border-radius:8px}
+.tinfo{padding:14px 16px}.tinfo b{font-size:15px}.tinfo p{color:var(--mute);font-size:12.5px;margin-top:3px}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Segoe UI Variable","Segoe UI",system-ui,sans-serif;background:var(--bgimg) center top/cover fixed,var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:14px;user-select:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.titlebar{height:40px;display:flex;align-items:center;gap:8px;padding-left:14px;-webkit-app-region:drag;font-weight:600;font-size:13px;color:var(--mute)}
+.titlebar img{width:20px;height:20px}
+.shell{display:flex;height:calc(100vh - 40px)}
+nav{width:84px;padding:12px 10px;display:flex;flex-direction:column;gap:6px;align-items:center}
+nav button{width:62px;padding:10px 0 8px;border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--mute);transition:.15s}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button:hover{background:var(--card);color:var(--text)}
+nav button.on{color:var(--g)}nav button.on:hover{background:transparent}
+nav .sp{flex:1}
+.avatar{width:42px;height:42px;border-radius:12px;background:var(--card2);image-rendering:pixelated;border:2px solid var(--line)}
+main{flex:1;padding:6px 28px 24px 8px;overflow-y:auto;min-width:0}
+.page{display:none;animation:in .25s ease}.page.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:26px;font-weight:700;margin-bottom:4px}.sub{color:var(--mute);margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.hero{display:flex;align-items:center;gap:26px;padding:28px;background:radial-gradient(120% 140% at 0% 0%,var(--glow) 0%,var(--card) 60%);position:relative}
+.hero img{width:150px;height:150px;filter:drop-shadow(0 14px 22px #0009);animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-2deg)}}
+.hero h1{font-size:32px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+.chip{background:var(--chipbg);border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:12px;color:var(--mute)}
+.chip b{color:var(--g);font-weight:600}
+.row{display:flex;gap:12px;align-items:center}
+select,.csel-btn,input[type=text]{background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;outline:none;user-select:text}
+select:focus,input[type=text]:focus,.csel.open .csel-btn{border-color:var(--g2)}
+.btn{background:linear-gradient(180deg,var(--g),var(--g2));color:var(--btntext);font-weight:700;border-radius:12px;padding:13px 28px;transition:.15s;box-shadow:0 6px 18px color-mix(in srgb,var(--g2) 25%,transparent)}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}.btn:disabled{filter:grayscale(.7) brightness(.7);transform:none;cursor:default}
+.btn.big{font-size:17px;padding:15px 44px}
+.ghost{border:1px solid var(--line);border-radius:10px;padding:8px 14px;color:var(--mute);transition:.15s}.ghost:hover{color:var(--text);border-color:var(--mute)}
+.prog{margin-top:16px;display:none}.prog.on{display:block}
+.bar{height:8px;background:var(--bg2);border-radius:8px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g2),var(--g));border-radius:8px;transition:width .3s}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.perk{display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:.15s}
+.perk:hover{border-color:var(--g2);transform:translateY(-1px)}
+.perk b{font-size:15px}.perk p{color:var(--mute);font-size:12.5px;margin-top:3px;line-height:1.4}
+.tag{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--g);margin-bottom:3px}
+.sw{flex:none;width:40px;height:22px;border-radius:22px;background:var(--line);position:relative;transition:.2s;margin-top:2px}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on{background:var(--g2)}.sw.on::after{left:21px}
+.mod{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.mod img,.mod .ph{width:46px;height:46px;border-radius:10px;background:var(--card2);flex:none}
+.mod div.t{flex:1;min-width:0}.mod b{display:block}.mod span{color:var(--mute);font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mod .ghost.added{color:var(--g);border-color:var(--g2)}
+h3{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px}
+.set{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:14px 0;border-bottom:1px solid var(--line)}.set:last-child{border:0}
+.set p{color:var(--mute);font-size:12.5px;margin-top:2px}
+input[type=range]{accent-color:var(--g);width:200px}
+#console{background:var(--cons);border:1px solid var(--line);border-radius:12px;padding:12px;height:170px;overflow:auto;font:11.5px ui-monospace,Consolas,monospace;color:#9fc4a4;white-space:pre-wrap;user-select:text;margin-top:12px}
+#login{position:fixed;inset:40px 0 0 0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;background:radial-gradient(circle at 50% 35%,var(--glow),transparent 65%),var(--bgimg) center top/cover,var(--bg)}
+#login img{width:210px;height:210px;animation:float 4s ease-in-out infinite;filter:drop-shadow(0 18px 30px #000a)}
+#login h1{font-size:42px;letter-spacing:.5px}#login .sub{margin:0 0 14px;font-size:15px}
+#err{color:#ff8f8f;font-size:13px;max-width:400px;min-height:18px}
+#toast{position:fixed;bottom:22px;right:22px;background:#3a1717;border:1px solid #7a2c2c;padding:12px 16px;border-radius:12px;max-width:380px;display:none;z-index:20;user-select:text}
+
+.shell{position:relative}
+#player{width:262px;padding:6px 22px 24px 0;display:flex;flex-direction:column}
+#player .card{flex:1;display:flex;flex-direction:column;align-items:center;padding:18px 14px;background:radial-gradient(100% 70% at 50% 0%,var(--glow) 0%,var(--card) 70%)}
+.stage{position:relative;width:230px;height:318px}
+#skin{position:relative;z-index:1;cursor:grab}
+.shadow{position:absolute;bottom:4px;left:50%;width:120px;height:18px;margin-left:-60px;border-radius:50%;background:radial-gradient(#000c,#0000 70%);animation:sh 3.14s ease-in-out infinite}
+@keyframes sh{50%{transform:scale(.78);opacity:.55}}
+#pname{font-size:18px;font-weight:700;margin-top:6px}
+#pprof{color:var(--mute);font-size:12px;margin:2px 0 10px}
+.seg{display:flex;gap:4px;background:var(--bg2);padding:4px;border-radius:10px;margin-bottom:10px}
+.seg button{padding:5px 9px;border-radius:7px;font-size:12px;color:var(--mute)}.seg button.on{background:var(--card2);color:var(--g)}
+#player .ghost{width:100%;font-size:12.5px}
+.prof{display:flex;gap:14px;align-items:center}.prof>img{width:48px;height:48px;border-radius:12px;background:var(--card2);object-fit:contain;flex:none}
+.prof .t{flex:1;min-width:0}.prof b{display:block;font-size:15px}.prof span{color:var(--mute);font-size:12px}
+.prof.active{border-color:var(--g2);box-shadow:0 0 0 1px var(--g2) inset}
+.badge{font-size:10px;text-transform:uppercase;letter-spacing:.7px;background:var(--g2);color:var(--btntext);border-radius:99px;padding:2px 8px;font-weight:700;margin-left:6px;vertical-align:middle}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.acts .ghost{padding:6px 10px;font-size:12px}
+.notice{background:#2a2a14;border:1px solid #5b5a22;color:#e8e3a0;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+#modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:30}
+#modal .card{width:380px;background:var(--card2)}#modal h2{font-size:18px;margin-bottom:8px}#modal p{color:var(--mute);margin-bottom:12px}
+#modal input{width:100%;margin-bottom:14px}#modal .row{justify-content:flex-end}
+
+.sm{padding:8px 16px;font-size:13px;border-radius:10px;box-shadow:none}
+.row2{display:flex;justify-content:space-between;align-items:center;margin:22px 0 10px}.row2 h3{margin:0}
+.prof .t span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prof{cursor:pointer;transition:.15s}.prof:hover{border-color:var(--g2)}
+.menu{position:relative}.menu summary{list-style:none;cursor:pointer;padding:6px 11px;border:1px solid var(--line);border-radius:10px;color:var(--mute)}
+.menu summary::-webkit-details-marker{display:none}
+.mbox{position:absolute;right:0;top:36px;z-index:6;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:180px;display:flex;flex-direction:column;backdrop-filter:blur(10px)}
+.mbox button{padding:8px 10px;text-align:left;border-radius:8px;font-size:13px}.mbox button:hover{background:var(--bg2)}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{padding:9px 18px;border-radius:10px;color:var(--mute);border:1px solid transparent;font-weight:600}
+.tabs button:hover{color:var(--text)}.tabs button.on{background:var(--card2);color:var(--g);border-color:var(--line)}
+textarea{background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;outline:none;width:100%;resize:none;user-select:text}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px;margin:14px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}.tile b{display:block;font-size:20px;color:var(--g)}.tile span{font-size:11.5px;color:var(--mute)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th{text-align:left;color:var(--mute);font-weight:500;padding:6px 8px;font-size:11.5px;text-transform:uppercase;letter-spacing:.6px}.tbl td{padding:9px 8px;border-top:1px solid var(--line)}
+.uhead{display:flex;gap:18px;align-items:flex-start}.uhead img.body{width:84px;image-rendering:pixelated}
+.uhead h2{font-size:24px}.muted{color:var(--mute);font-size:12.5px}
+.ulist{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.ubtn{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 14px 8px 8px;cursor:pointer}.ubtn:hover{border-color:var(--g2)}.ubtn img{width:30px;height:30px;border-radius:7px;image-rendering:pixelated}
+#updating{position:fixed;inset:0;z-index:40;background:var(--bgimg) center top/cover,var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#updating .bar{width:280px}
+#upd{position:fixed;top:48px;right:20px;z-index:25;display:none;background:var(--card2);border:1px solid var(--g2);border-radius:12px;padding:10px 14px;align-items:center;gap:12px;backdrop-filter:blur(10px)}
+.chip.off{border-color:#a55;color:#f99}
+details.log summary{cursor:pointer;color:var(--mute);margin:20px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:1px}
+.field{display:flex;gap:10px;align-items:center}.field input{flex:1;min-width:0}
+
+/* ====== scrollbars: one look everywhere (page, console, dropdowns, text boxes) ====== */
+html{color-scheme:dark}
+*::-webkit-scrollbar{width:12px;height:12px}
+*::-webkit-scrollbar-track{background:transparent;margin:6px 0}
+*::-webkit-scrollbar-thumb{background:var(--line);border-radius:12px;border:3px solid transparent;background-clip:padding-box;min-height:42px}
+*::-webkit-scrollbar-thumb:hover{background:var(--g2);background-clip:padding-box;border:3px solid transparent}
+*::-webkit-scrollbar-thumb:active{background:var(--g);background-clip:padding-box;border:3px solid transparent}
+*::-webkit-scrollbar-corner{background:transparent}
+main{scroll-behavior:smooth}
+
+/* ====== motion ====== */
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.88);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes ripple{to{transform:scale(1);opacity:0}}
+@keyframes shimmer{to{transform:translateX(100%)}}
+@keyframes drift{0%{transform:translate3d(0,0,0) scale(.6);opacity:0}12%{opacity:.4}100%{transform:translate3d(var(--dx,0),-115vh,0) scale(1.25);opacity:0}}
+@keyframes breathe{from{background-position:0% 0%}to{background-position:100% 70%}}
+@keyframes toastin{from{opacity:0;transform:translateX(30px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes toastout{to{opacity:0;transform:translateX(30px) scale(.96)}}
+@keyframes dotpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--g) 60%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
+@keyframes stripes{to{background-position:28px 0}}
+@keyframes navpop{0%{transform:scale(.7) rotate(-12deg)}60%{transform:scale(1.18) rotate(4deg)}100%{transform:none}}
+@keyframes menuin{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
+
+.page.on .st{animation:rise .55s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0)*55ms)}
+.hero::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(50% 70% at 50% 50%,color-mix(in srgb,var(--g) 16%,transparent),transparent 70%) 0 0/230% 230% no-repeat;animation:breathe 11s ease-in-out infinite alternate}
+.hero>*{position:relative}
+
+/* sliding nav indicator */
+nav{position:relative}
+#navind{position:absolute;top:0;left:0;width:62px;height:50px;border-radius:14px;background:var(--card2);box-shadow:inset 0 0 0 1px var(--line);transition:transform .5s cubic-bezier(.3,1.35,.45,1),height .3s;z-index:0;pointer-events:none;opacity:0}
+#navind::before{content:"";position:absolute;left:-11px;top:24%;bottom:24%;width:3px;border-radius:3px;background:var(--g);box-shadow:0 0 12px var(--g)}
+nav button{z-index:1}
+nav button.on svg{animation:navpop .45s cubic-bezier(.3,1.4,.5,1)}
+
+/* click feedback */
+.btn,.ghost,nav button,.seg button,.tabs button,.perk,.prof,.theme,.ubtn,.mbox button,.csel-btn,.csel-opt,.menu summary{position:relative}
+.rip-wrap{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:0}
+.rip{position:absolute;border-radius:50%;background:currentColor;opacity:.3;transform:scale(0);animation:ripple .65s cubic-bezier(.2,.7,.3,1) forwards}
+.btn .rip{background:#fff;opacity:.4}
+.btn,.ghost,nav button,.seg button,.tabs button,.menu summary{transition:transform .15s cubic-bezier(.3,1.4,.5,1),filter .15s,background .15s,color .15s,border-color .15s,box-shadow .2s}
+.btn:active:not(:disabled){transform:scale(.94);filter:brightness(.94)}
+.ghost:active,.menu summary:active,.tabs button:active,.seg button:active{transform:scale(.93)}
+nav button:active{transform:scale(.9)}
+.perk:active,.prof:active,.theme:active,.ubtn:active{transform:scale(.985)}
+.perk:hover,.prof:hover,.theme:hover,.ubtn:hover{box-shadow:0 12px 30px -14px var(--g2)}
+.btn:hover:not(:disabled){box-shadow:0 10px 26px color-mix(in srgb,var(--g2) 40%,transparent)}
+.sw::after{transition:left .32s cubic-bezier(.3,1.7,.5,1),width .18s,background .2s}
+.sw:active::after{width:22px}.sw.on:active::after{left:15px}
+.sw.on{box-shadow:0 0 14px color-mix(in srgb,var(--g2) 55%,transparent)}
+.ghost.added{animation:pop .4s cubic-bezier(.3,1.4,.5,1)}
+.btn.busy{background:repeating-linear-gradient(115deg,color-mix(in srgb,var(--g) 100%,#fff 0%) 0 14px,var(--g2) 14px 28px);background-size:28px 100%;animation:stripes .8s linear infinite;pointer-events:none}
+.bar i{position:relative;overflow:hidden}
+.bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,#fff7,transparent);transform:translateX(-100%);animation:shimmer 1.3s ease-in-out infinite}
+.prog.on{animation:rise .35s ease backwards}
+.mbox{animation:menuin .16s ease}
+#modal{animation:fade .18s ease}
+#modal .card{animation:pop .3s cubic-bezier(.2,1.2,.4,1)}
+#toast{animation:toastin .38s cubic-bezier(.2,1.1,.4,1)}#toast.out{animation:toastout .25s ease forwards}
+#toast.ok{background:var(--card2);border-color:var(--g2)}
+#upd{animation:toastin .4s cubic-bezier(.2,1.1,.4,1)}
+#updating{animation:fade .25s ease}
+body.theming *{transition:background-color .45s,border-color .45s,color .35s,fill .35s!important}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;background:var(--mute);vertical-align:1px}
+.dot.ok{background:var(--g);animation:dotpulse 1.6s ease-out infinite}.dot.warn{background:#e6c34a}
+#bokeh{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+#bokeh span{position:absolute;bottom:-40px;border-radius:50%;background:radial-gradient(circle,var(--g) 0,transparent 68%);opacity:0;animation:drift linear infinite}
+#login h1,#login .sub,#login .btn{animation:rise .7s cubic-bezier(.2,.8,.2,1) backwards}
+#login .sub{animation-delay:.1s}#login .btn{animation-delay:.2s}
+
+/* themed dropdown (replaces the native select so its list scrolls like the rest of the app) */
+.csel{position:relative;display:inline-block}
+.csel-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left}
+.csel-btn svg{width:16px;height:16px;stroke:var(--mute);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+.csel.open .csel-btn svg{transform:rotate(180deg)}
+.csel-btn:disabled{opacity:.55;cursor:default}
+.csel-list{position:absolute;left:0;top:calc(100% + 8px);min-width:100%;max-height:268px;overflow-y:auto;z-index:50;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 18px 40px -10px #000c;opacity:0;transform:translateY(-8px) scale(.97);transform-origin:top;pointer-events:none;transition:opacity .16s,transform .22s cubic-bezier(.2,1.1,.4,1);backdrop-filter:blur(12px)}
+.csel.open .csel-list{opacity:1;transform:none;pointer-events:auto}
+.csel-opt{padding:8px 12px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s,padding .15s}
+.csel-opt:hover{background:var(--bg2);padding-left:16px}.csel-opt.on{background:var(--card);color:var(--g);font-weight:600}
+.csel-opt.dis{opacity:.4;cursor:default;pointer-events:none}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+.dropzone{border:1px dashed var(--g2);border-radius:14px;padding:22px;text-align:center;background:var(--bg2);display:flex;flex-direction:column;gap:6px;cursor:pointer;color:var(--g);margin:10px 0 14px;transition:.2s}
+.dropzone span{font-size:12px;color:var(--mute)}.dropzone.drag{background:var(--glow);border-style:solid;transform:scale(1.01)}
+</style></head><body>
+<div class="titlebar"><img class="logo" src="assets/icon.png" alt="">Jogurt Client<span class="muted" id="ver-tag" style="margin-left:6px"></span><span class="chip off" id="offline" style="display:none;margin-left:8px">Offline</span></div>
+
+<div id="login">
+  <div id="bokeh"></div>
+  <img class="logo" src="assets/icon.png" alt="Jogurt">
+  <h1>Jogurt Client</h1><p class="sub">Only milk, cultures and a lot more FPS.</p>
+  <button class="btn big" id="signin">Sign in with Microsoft</button><div id="err"></div>
+</div>
+<div id="updating"><img class="logo" src="assets/icon.png" alt="" style="width:110px;height:110px"><h2>Updating Jogurt Client</h2><div class="bar"><i id="ubar"></i></div><p class="muted">It will restart by itself.</p></div>
+<div id="upd"></div>
+
+<div class="shell">
+<nav>
+  <i id="navind"></i>
+  <button data-p="play" class="on"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>Play</button>
+  <button data-p="addons"><svg viewBox="0 0 24 24"><path d="M12 3 3 7.500 12 12l9-4.500zM3 12l9 4.500 9-4.500M3 16.500 12 21l9-4.500"/></svg>Addons</button>
+  <button data-p="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.400 3.600-7 8-7s8 2.600 8 7"/></svg>Profile</button>
+  <button data-p="perks"><svg viewBox="0 0 24 24"><path d="M13 3 5 13h6l-1 8 8-10h-6z"/></svg>Perks</button>
+  <button data-p="themes"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.100 0 1.800-.9 1.500-1.900-.3-1 .3-2.100 1.400-2.100H17a4 4 0 0 0 4-4c0-5-4-10-9-10z"/><circle cx="7.500" cy="11" r="1"/><circle cx="10.500" cy="7" r="1"/><circle cx="15.500" cy="7.500" r="1"/></svg>Themes</button>
+  <button data-p="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.900 4.900 7 7M17 17l2.100 2.100M4.900 19.100 7 17M17 7l2.100-2.100"/></svg>Settings</button>
+  <div class="sp"></div>
+  <img class="avatar" id="avatar" alt="" title="">
+</nav>
+<main>
+  <section class="page on" id="play">
+    <div class="card hero">
+      <img class="logo" src="assets/icon.png" alt="">
+      <div style="flex:1;min-width:0">
+        <h1>Ready to play</h1><p class="sub" style="margin:0"><b id="hi-prof" style="color:var(--g)"></b></p>
+        <div class="chips" id="chips"></div>
+        <div class="row"><select id="ver" style="width:140px"></select><select id="loader" style="width:105px"><option value="fabric">Fabric</option><option value="vanilla">Vanilla</option></select><button class="btn big" id="play-btn" style="padding:15px 36px"><span class="lbl">Play</span></button></div>
+        <div class="prog" id="prog"><span id="ptext" style="color:var(--mute);font-size:13px"></span><div class="bar"><i id="pbar"></i></div></div>
+      </div>
+    </div>
+    <div class="row2"><h3>Your modpacks</h3><div class="row"><button class="ghost sm" id="importpack">Import .mrpack</button><button class="btn sm" id="newprof">+ New modpack</button></div></div>
+    <div class="grid" id="prof-grid"></div>
+    <details class="log"><summary>Game log</summary><div id="console"></div></details>
+  </section>
+
+  <section class="page" id="addons">
+    <h1>Addons</h1><p class="sub">Browse Modrinth and add content to <b id="a-target" style="color:var(--g)"></b>.</p>
+    <div class="tabs" id="atabs"><button data-t="mod" class="on">Mods</button><button data-t="modpack">Modpacks</button><button data-t="pack">Resource packs</button></div>
+    <input type="text" id="aq" placeholder="Search Modrinth..." style="width:100%;margin-bottom:14px">
+    <div id="a-results"></div><div id="a-own"></div>
+  </section>
+
+  <section class="page" id="profile">
+    <div id="me-banner"></div>
+    <div class="row" style="margin-bottom:6px"><input type="text" id="uq" placeholder="Find a Jogurt player..." style="flex:1"><button class="ghost" id="me-btn">My profile</button></div>
+    <div class="ulist" id="u-results"></div>
+    <div id="uview"></div>
+  </section>
+
+  <section class="page" id="perks"><div id="n-perks"></div><h1>FPS perks</h1><p class="sub">Toggle the optimizations for the selected modpack. Downloaded from Modrinth on first play.</p><div class="grid" id="perk-grid"></div></section>
+
+  <section class="page" id="themes"><h1>Themes</h1><p class="sub">Change how Jogurt Client looks. Your choice is saved.</p><div class="tgrid" id="theme-grid"></div></section>
+
+  <section class="page" id="settings">
+    <h1>Settings</h1><p class="sub">Tune performance, updates and your account.</p>
+    <div class="card">
+      <div class="set"><div><b>Memory</b><p>Maximum RAM for the selected modpack</p></div><div class="row"><input type="range" id="ram" min="2" max="16"><b id="ramv" style="width:48px"></b></div></div>
+      <div class="set"><div><b>Tuned JVM flags</b><p>Optimized garbage collector for smoother frame times</p></div><div class="sw" id="sw-jvm"></div></div>
+      <div class="set"><div><b>Fullscreen</b><p>Start the game in fullscreen</p></div><div class="sw" id="sw-fs"></div></div>
+      <div class="set"><div><b>Show snapshots</b><p>Include snapshot versions in the version list</p></div><div class="sw" id="sw-snap"></div></div>
+      <div class="set"><div style="flex:1"><b>Show on Discord</b><p>Show Jogurt Client, your modpack and play time on your Discord profile</p><p id="dc-status" style="margin-top:6px"></p></div><div class="sw" id="sw-discord"></div></div>
+      <div class="set"><div><b>Jogurt in-game theme</b><p>Green menus, Jogurt logo and aurora title screen inside Minecraft. Applies the next time you press Play.</p></div><div class="sw" id="sw-ui"></div></div>
+      <div class="set"><div><b>Auto-update</b><p>When a new version is on GitHub, download and install it on startup (or show a banner if you turn this off)</p></div><div class="sw" id="sw-auto"></div></div>
+      <div class="set"><div style="flex:1"><b>Updates</b><p id="upd-status">Checks GitHub releases for Jogurt Client</p></div><button class="ghost" id="chk">Check for updates</button></div>
+      <div class="set" id="row-update" style="display:none"><div style="flex:1"><b>Update source</b><p>GitHub repo that publishes JogurtClient.exe releases (owner/repo)</p></div><div class="field" style="width:340px"><input type="text" id="repo" placeholder="owner/repo"></div></div>
+      <div class="set" id="row-api" style="display:none"><div style="flex:1"><b>Community server</b><p>URL of your Jogurt community server (for public profiles)</p></div><div class="field" style="width:340px"><input type="text" id="api" placeholder="https://your-server.example"></div></div>
+      <div class="set"><div><b>Launcher folder</b><p id="root"></p></div><button class="ghost" id="open">Open folder</button></div>
+      <div class="set"><div><b>Account</b><p id="acct"></p></div><button class="ghost" id="out">Sign out</button></div>
+    </div>
+  </section>
+</main>
+<aside id="player"><div class="card">
+  <div class="stage"><canvas id="skin"></canvas><div class="shadow"></div></div>
+  <div id="pname"></div><div id="pprof"></div>
+  <div class="seg" id="seg"><button data-a="float" class="on">Float</button><button data-a="walk">Walk</button><button data-a="run">Run</button><button data-a="fly">Fly</button></div>
+  <button class="ghost" id="chskin">Change skin</button>
+</div></aside></div>
+<div id="modal"><div class="card"><h2 id="m-t"></h2><p id="m-p"></p><input type="text" id="m-i"><div class="row"><button class="ghost" id="m-c">Cancel</button><button class="btn" id="m-ok" style="padding:10px 22px">OK</button></div></div></div>
+<div id="toast"></div>
+<script src="assets/skinview3d.bundle.js"></script>
+<script>
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let S={profiles:[]},PERKS=[],user=null,viewer=null,skinModel='default',V={versions:[],fabric:[]},aTab='mod',VER='',viewing=null;
+const P=()=>S.profiles.find(p=>p.id===S.active)||S.profiles[0];
+const save=p=>{Object.assign(S,p);return jogurt.setSettings(p)};
+const saveProfiles=()=>save({profiles:S.profiles,active:S.active});
+const patchP=p=>{Object.assign(P(),p);saveProfiles()};
+const toast=(m,ok)=>{const t=$('#toast');clearTimeout(t._t);clearTimeout(t._o);t.classList.remove('out');t.classList.toggle('ok',!!ok);t.style.display='none';void t.offsetWidth;t.textContent=m;t.style.display='block';t._t=setTimeout(()=>{t.classList.add('out');t._o=setTimeout(()=>{t.style.display='none';t.classList.remove('out')},260)},6500)};
+const log=m=>{const c=$('#console');c.textContent+=m+'\n';if(c.textContent.length>40000)c.textContent=c.textContent.slice(-30000);c.scrollTop=c.scrollHeight};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1).replace('.0','')+'K':String(n||0);
+const dur=ms=>{const m=Math.floor((ms||0)/60000);return m>=60?`${Math.floor(m/60)}h ${m%60}m`:`${m}m`};
+const uid=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const chip=h=>`<span class="chip">${h}</span>`;
+const supportsFabric=v=>V.fabric.includes(v);
+const shared=p=>({name:p.name,version:p.version,loader:p.loader,mods:p.extraMods,packs:p.extraPacks,modpack:p.modpack});
+// Total mods shown in UI: pack file count (if known) + extra Modrinth mods + local JARs.
+const modCount=p=>{
+  if(!p)return 0;
+  const local=(p.localMods||[]).length;
+  const extra=(p.extraMods||[]).length;
+  if(p.modpack){
+    const base=typeof p.modpack.fileCount==='number'?p.modpack.fileCount
+      :(typeof p.modpack.modCount==='number'?p.modpack.modCount:null);
+    if(base===null)return local+extra?local+extra:null; // unknown pack size
+    return base+local+extra;
+  }
+  return extra+local;
+};
+const modCountLabel=p=>{
+  const n=modCount(p);
+  if(n===null)return 'Modpack';
+  return `${n} mod${n===1?'':'s'}`;
+};
+
+function modal({title,text='',input,ok='OK',cancel=true}){return new Promise(res=>{
+  $('#m-t').textContent=title;$('#m-p').textContent=text;$('#m-p').style.display=text?'block':'none';
+  const i=$('#m-i');i.style.display=input!==undefined?'block':'none';i.value=input||'';
+  $('#m-ok').textContent=ok;$('#m-c').style.display=cancel?'':'none';$('#modal').style.display='flex';if(input!==undefined)i.focus();
+  const done=v=>{$('#modal').style.display='none';res(v)};
+  $('#m-ok').onclick=()=>done(input!==undefined?i.value.trim()||null:true);$('#m-c').onclick=()=>done(null);
+  i.onkeydown=e=>{if(e.key==='Enter')$('#m-ok').click();if(e.key==='Escape')done(null)};
+})}
+
+const STAG='.grid,.tgrid,.tiles,.ulist,#a-results,#a-own,#uview,#prof-grid';
+function tagStagger(pg){let i=0;[...pg.children].forEach(c=>{const kids=c.matches(STAG)?[...c.children]:[c];kids.forEach(k=>{if(!k.classList.contains('st')){k.classList.add('st');k.style.setProperty('--i',Math.min(i,12))}i++})})}
+function moveInd(){
+  const b=$('nav button.on'),n=$('#navind');if(!b||!n)return;
+  n.style.height=b.offsetHeight+'px';n.style.transform=`translate(${b.offsetLeft}px,${b.offsetTop}px)`;n.style.opacity=1;
+}
+window.addEventListener('resize',moveInd);
+function go(p){
+  $$('nav button[data-p]').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
+  $$('.page').forEach(x=>x.classList.toggle('on',x.id===p));
+  tagStagger($('#'+p));moveInd();
+  $('#player').style.display=(p==='play'||p==='profile')?'flex':'none';
+  if(p==='profile'&&!viewing)loadMe();
+  if(p==='addons')searchAddons();
+}
+$$('nav button[data-p]').forEach(b=>b.onclick=()=>go(b.dataset.p));
+
+/* ---- themes ---- */
+const THEMES=[
+ {id:'jogurt',name:'Jogurt',desc:'Fresh green. The classic look.',logo:'assets/icon.png',bar:['#0c140e','#cfe8d0'],prev:'radial-gradient(circle at 30% 30%,#24442c,#0c140e 75%)',sw:['#5fd068']},
+ {id:'guivio',name:'Guivio',desc:'Bold red with the Guivio character.',logo:'assets/guivio.png',bar:['#140a0b','#ffd6d6'],prev:'radial-gradient(circle at 30% 30%,#5a1418,#140a0b 75%)',sw:['#ff4b4b']},
+ {id:'fourth',name:'Fourth',desc:'Lightning blue with Savitar.',logo:'assets/savitar-logo.png',bar:['#07101c','#bfe6ff'],prev:'linear-gradient(#030a1460,#030a1490),url(assets/savitar.jpg)',sw:['#4cc9ff']}
+];
+let theme=THEMES[0];
+const logoSrc=()=>theme.logo;
+function applyTheme(id,persist){
+  theme=THEMES.find(t=>t.id===id)||THEMES[0];
+  if(persist){document.body.classList.add('theming');clearTimeout(applyTheme._t);applyTheme._t=setTimeout(()=>document.body.classList.remove('theming'),600)}
+  document.body.dataset.theme=theme.id;
+  $$('img.logo').forEach(i=>i.src=theme.logo);
+  jogurt.applyTheme({color:theme.bar[0],symbol:theme.bar[1],icon:theme.logo});
+  if(persist)save({theme:theme.id});
+  renderThemes();if(S.profiles.length)renderProfiles();
+}
+function renderThemes(){
+  $('#theme-grid').innerHTML=THEMES.map(t=>`<div class="card theme ${t.id===theme.id?'on':''}" data-t="${t.id}"><div class="tprev" style="background-image:${t.prev}"><img src="${t.logo}" alt=""><i style="background:${t.sw[0]}"></i></div><div class="tinfo"><b>${t.name}</b>${t.id===theme.id?'<span class="badge">Active</span>':''}<p>${t.desc}</p></div></div>`).join('');
+  $$('.theme').forEach(el=>el.onclick=()=>applyTheme(el.dataset.t,true));
+}
+
+/* ---- play page / modpacks ---- */
+function notices(){
+  const p=P(),t=p.modpack?'This modpack manages its own mods, so perks and extra mods do not apply.':p.loader!=='fabric'?'This modpack is Vanilla. Switch it to Fabric on the Play page to use mods and perks.':'';
+  $('#n-perks').innerHTML=t?`<div class="notice">${t}</div>`:'';
+}
+function fillVersions(){
+  const p=P(),sel=$('#ver');
+  const list=!p.version||V.versions.includes(p.version)?V.versions:[p.version,...V.versions];
+  sel.innerHTML=list.map(v=>`<option>${esc(v)}</option>`).join('');
+  if(p.version)sel.value=p.version;
+  $('#loader').querySelector('option[value=fabric]').disabled=!supportsFabric(p.version)&&!p.modpack&&V.fabric.length>0;
+  $('#loader').value=p.loader;sel.disabled=$('#loader').disabled=!!p.modpack;
+  sel._refresh&&sel._refresh();$('#loader')._refresh&&$('#loader')._refresh();
+}
+function chips(){
+  const p=P();if(!p)return;
+  const n=PERKS.filter(x=>(p.perks||{})[x.id]!==false).length;
+  const mc=modCount(p);
+  const modsChip=p.modpack
+    ?(typeof mc==='number'?chip(`<b>${mc}</b> mod${mc===1?'':'s'}`):'')
+    :(p.loader==='fabric'?chip(`<b>${n}</b> FPS perks`)+chip(`<b>${mc}</b> mod${mc===1?'':'s'}`):chip('<b>Vanilla</b>'));
+  $('#chips').innerHTML=(p.modpack?chip(`<b>${esc(p.modpack.title)}</b> ${esc(p.modpack.versionName||'')}`):'')+modsChip+chip(`<b>${p.extraPacks.length}</b> resource pack${p.extraPacks.length===1?'':'s'}`)+chip(`<b>${p.ram} GB</b> RAM`)+chip(S.jvmflags?'<b>Tuned</b> JVM':'Default JVM');
+  $('#hi-prof').textContent=p.name;$('#pprof').textContent='Modpack: '+p.name;
+  fillVersions();$('#ram').value=p.ram;$('#ramv').textContent=p.ram+' GB';notices();
+}
+function renderPerks(){
+  const p=P();
+  $('#perk-grid').innerHTML=PERKS.map(k=>`<div class="card perk" data-id="${k.id}"><div style="flex:1"><div class="tag">${k.tag}</div><b>${k.name}</b><p>${k.desc}</p></div><div class="sw ${(p.perks||{})[k.id]!==false?'on':''}"></div></div>`).join('');
+  $$('.perk').forEach(el=>el.onclick=()=>{const id=el.dataset.id,pk={...(P().perks||{})};pk[id]=pk[id]===false;patchP({perks:pk});renderPerks();chips()});
+}
+function renderProfiles(){
+  const many=S.profiles.length>1;
+  $('#prof-grid').innerHTML=S.profiles.map(p=>`<div class="card prof ${p.id===S.active?'active':''}" data-id="${p.id}"><img src="${p.modpack&&p.modpack.icon?esc(p.modpack.icon):logoSrc()}" alt=""><div class="t"><b>${esc(p.name)}${p.public?'<span class="badge">Public</span>':''}</b><span>${p.modpack?'Modpack':p.loader==='fabric'?'Fabric':'Vanilla'} · ${esc(p.version||'no version')} · ${modCountLabel(p)}</span></div><div class="acts"><button class="btn sm" data-act="play">Play</button><details class="menu"><summary>⋯</summary><div class="mbox"><button data-act="edit">Edit mods</button><button data-act="ren">Rename</button><button data-act="pub">${p.public?'Make private':'Make public'}</button><button data-act="dup">Duplicate</button><button data-act="fold">Open folder</button><button data-act="rep">Repair / re-download</button>${many?'<button data-act="del">Delete</button>':''}</div></details></div></div>`).join('');
+}
+$('#prof-grid').onclick=async e=>{
+  const card=e.target.closest('.prof');if(!card||e.target.closest('summary'))return;
+  const id=card.dataset.id,p=S.profiles.find(x=>x.id===id),act=e.target.closest('button')&&e.target.closest('button').dataset.act;
+  $$('details.menu[open]').forEach(d=>d.open=false);
+  if(!act||act==='play'){if(S.active!==id){save({active:id});refreshAll()}if(act==='play')launch();return}
+  if(act==='edit'){save({active:id});refreshAll();go('addons');aTab='mod';$$('#atabs button').forEach(x=>x.classList.toggle('on',x.dataset.t==='mod'));searchAddons();return}
+  if(act==='ren'){const n=await modal({title:'Rename modpack',input:p.name});if(n){p.name=n;saveProfiles();refreshAll()}}
+  if(act==='pub'){p.public=!p.public;saveProfiles();refreshAll();toast(p.public?'Modpack is public. It appears on your profile when you publish it.':'Modpack is private again.');syncQuiet()}
+  if(act==='dup'){S.profiles.push({...JSON.parse(JSON.stringify(p)),id:uid(),name:p.name+' copy',public:false});saveProfiles();refreshAll()}
+  if(act==='fold')jogurt.openFolder(id);
+  if(act==='rep'){await jogurt.repair(id);toast('Next time you press Play, everything is re-downloaded.')}
+  if(act==='del'){if(!await modal({title:'Delete "'+p.name+'"?',text:'It is removed from the launcher. Worlds stay on disk in its folder.',ok:'Delete'}))return;S.profiles=S.profiles.filter(x=>x.id!==id);if(S.active===id)S.active=S.profiles[0].id;saveProfiles();refreshAll()}
+};
+$('#newprof').onclick=async()=>{
+  const n=await modal({title:'New modpack',text:'Name your custom modpack. Add mods and resource packs from the Addons tab.',input:'My modpack'});if(!n)return;
+  const v=V.versions[0]||P().version,id=uid();
+  S.profiles.push({id,name:n,version:v,loader:supportsFabric(v)?'fabric':'vanilla',ram:4,perks:{},extraMods:[],extraPacks:[],localMods:[],public:false,modpack:null});
+  save({profiles:S.profiles,active:id});refreshAll();
+};
+$('#importpack').onclick=async()=>{
+  const r=await jogurt.importMrpack();
+  if(r.canceled)return;
+  if(!r.ok){toast(r.error);return}
+  // Main process already saved the profile (and may have emitted 'settings').
+  // Push only if it is not already present — otherwise we get a duplicate modpack.
+  if(r.profile&&!S.profiles.some(p=>p.id===r.profile.id)){
+    S.profiles.push(r.profile);
+  }
+  S.active=r.profile.id;
+  await save({profiles:S.profiles,active:S.active});
+  refreshAll();
+  toast(`Imported ${r.profile.name} (${r.fileCount} indexed files). Open Edit mods to customize it.`);
+};
+$('#ver').onchange=()=>{const v=$('#ver').value;let loader=P().loader;if(loader==='fabric'&&V.fabric.length&&!supportsFabric(v)){loader='vanilla';toast('Fabric is not available for '+v+'. Using Vanilla.')}patchP({version:v,loader});refreshAll()};
+$('#loader').onchange=()=>{patchP({loader:$('#loader').value});refreshAll()};
+async function launch(){
+  const b=$('#play-btn'),l=b.querySelector('.lbl');b.disabled=true;b.classList.add('busy');l.textContent='Working...';$('#console').textContent='';
+  const r=await jogurt.launch({profileId:S.active});
+  if(!r.ok){toast(r.error);b.disabled=false;b.classList.remove('busy');l.textContent='Play'}
+}
+$('#play-btn').onclick=launch;
+function refreshAll(){chips();renderPerks();renderProfiles();if($('#addons').classList.contains('on'))searchAddons()}
+
+/* ---- addons ---- */
+let at;
+async function searchAddons(){
+  const p=P(),t=aTab,q=$('#aq').value.trim();
+  $('#a-target').textContent=`${p.name} (${p.version||'?'})`;
+  $('#aq').placeholder={mod:'Search mods (Iris, Xaero\'s Minimap, Mod Menu...)',modpack:'Search modpacks (Fabulously Optimized, Cobblemon...)',pack:'Search resource packs (Faithful, Better Leaves...)'}[t];
+  if(t==='mod'&&p.loader!=='fabric'){$('#a-results').innerHTML=`<div class="notice">This modpack is Vanilla, so Fabric mods are unavailable. Select a Fabric modpack on the Play page to add mods.</div>`;$('#a-own').innerHTML='';return}
+  const hits=await jogurt.searchMods({query:q,version:p.version,type:t==='pack'?'resourcepack':t});
+  if(t!==aTab)return;
+  const key=t==='mod'?'extraMods':'extraPacks';
+  $('#a-results').innerHTML=hits.map(h=>{
+    const added=t!=='modpack'&&p[key].some(m=>m.slug===h.slug);
+    return `<div class="card mod">${h.icon?`<img src="${esc(h.icon)}" alt="">`:'<div class="ph"></div>'}<div class="t"><b>${esc(h.title)}</b><span>${esc(h.desc)}</span>${t==='modpack'?`<span>${fmt(h.downloads)} downloads</span>`:''}</div><button class="ghost ${added?'added':''}" data-slug="${esc(h.slug)}" data-t="${esc(h.title)}" data-i="${esc(h.icon||'')}">${t==='modpack'?'Install as modpack':added?'Added':'Add'}</button></div>`}).join('')||'<p class="sub">No results.</p>';
+  renderOwn();tagStagger($('#addons'));
+}
+function renderOwn(){
+  const p=P(),t=aTab;
+  if(t==='modpack'){$('#a-own').innerHTML='';return}
+  const key=t==='mod'?'extraMods':'extraPacks',list=p[key]||[];
+  const rows=list.map((m,i)=>`<div class="card mod">${m.icon?`<img src="${esc(m.icon)}" alt="">`:'<div class="ph"></div>'}<div class="t"><b>${esc(m.title)}</b><span>Modrinth project</span></div><button class="ghost" data-rm="${i}">Remove</button></div>`).join('');
+  const local=t==='mod'?(p.localMods||[]):[];
+  const localRows=local.map(m=>`<div class="card mod"><div class="ph">JAR</div><div class="t"><b>${esc(m.name)}</b><span>Local mod · ${esc(m.scan?.status||'not scanned')} · SHA-256 verified locally</span>${(m.scan?.reasons||[]).map(r=>`<span>${esc(r.level)} risk: ${esc(r.reason)}</span>`).join('')}</div><button class="ghost" data-rmlocal="${esc(m.file)}">Remove</button></div>`).join('');
+  $('#a-own').innerHTML=`<h3>In this modpack</h3>${rows||'<p class="sub">No Modrinth additions yet.</p>'}${t==='mod'?`<h3>Local JAR mods · safety scan</h3><div id="mod-drop" class="dropzone"><b>Drop .jar files here</b><span>or click to choose files · high-confidence cheat indicators are blocked</span><input id="local-mod-picker" type="file" accept=".jar" multiple hidden></div>${localRows||'<p class="sub">No local JAR mods added.</p>'}<p class="muted" style="margin-top:8px">The scanner uses local metadata and keyword heuristics, not a true AI or a guarantee. Unknown, obfuscated, or newly modified cheats may pass.</p>`:''}`;
+  const dz=$('#mod-drop'), picker=$('#local-mod-picker');
+  if(dz&&picker){dz.onclick=e=>{if(e.target!==picker)picker.click()};picker.onchange=()=>addLocalFiles([...picker.files]);}
+}
+async function addLocalFiles(files){
+  // File.path is not available in modern Electron. Ask the isolated preload bridge
+  // to resolve each dropped File to its real local path using webUtils.
+  const paths=[];
+  for(const file of files){
+    try{
+      const filePath=jogurt.getPathForFile(file);
+      if(filePath)paths.push(filePath);
+    }catch(err){console.warn('Could not resolve dropped mod file:',file?.name,err)}
+  }
+  if(!paths.length){
+    toast('Could not access those files. Try clicking the drop area and selecting the .jar files instead.');
+    return;
+  }
+  const r=await jogurt.addLocalMods({profileId:S.active,paths});
+  if(!r.ok){toast(r.error);return}
+  // Backend already saved; update in-memory profile so the UI shows the new JARs.
+  if(Array.isArray(r.localMods)) patchP({localMods:r.localMods});
+  const blocked=r.results.filter(x=>x.status==='blocked'),review=r.results.filter(x=>x.status==='review'),clear=r.results.filter(x=>x.status==='clear');
+  toast(`Scan complete: ${clear.length} clear, ${review.length} need review, ${blocked.length} blocked.`);
+  renderOwn();renderProfiles();chips();
+}
+$('#a-results').onclick=async e=>{
+  const b=e.target.closest('button[data-slug]');if(!b)return;
+  const p=P(),t=aTab;
+  if(t==='modpack'){
+    b.disabled=true;b.textContent='Adding...';
+    const info=await jogurt.modpackInfo(b.dataset.slug);
+    if(!info){toast('No Fabric version found for that modpack.');b.disabled=false;b.textContent='Install as modpack';return}
+    const id=uid();
+    S.profiles.push({id,name:b.dataset.t,version:info.mc,loader:'fabric',ram:6,perks:{},extraMods:[],extraPacks:[],localMods:[],public:false,modpack:{slug:b.dataset.slug,title:b.dataset.t,icon:b.dataset.i,versionId:info.versionId,versionName:info.versionName}});
+    save({profiles:S.profiles,active:id});refreshAll();go('play');toast('Modpack added to Play. Press Play to download it.');return;
+  }
+  const key=t==='mod'?'extraMods':'extraPacks';
+  if(p[key].some(m=>m.slug===b.dataset.slug))return;
+  patchP({[key]:[...p[key],{slug:b.dataset.slug,title:b.dataset.t,icon:b.dataset.i}]});
+  b.textContent='Added';b.classList.add('added');renderOwn();chips();renderProfiles();
+};
+$('#a-own').onclick=async e=>{
+  const local=e.target.closest('[data-rmlocal]');
+  if(local){
+    const r=await jogurt.removeLocalMod({profileId:S.active,file:local.dataset.rmlocal});
+    if(!r.ok){toast(r.error);return}
+    // Keep in-memory state in sync with what was removed on disk/settings.
+    const file=local.dataset.rmlocal;
+    patchP({localMods:(P().localMods||[]).filter(m=>m.file!==file)});
+    renderOwn();chips();renderProfiles();
+    return;
+  }
+  const b=e.target.closest('[data-rm]');
+  if(!b)return;
+  const key=aTab==='mod'?'extraMods':'extraPacks';
+  patchP({[key]:P()[key].filter((_,i)=>i!=b.dataset.rm)});
+  renderOwn();chips();renderProfiles();searchAddons();
+};
+$$('#atabs button').forEach(b=>b.onclick=()=>{aTab=b.dataset.t;$$('#atabs button').forEach(x=>x.classList.toggle('on',x===b));searchAddons()});
+$('#aq').oninput=()=>{clearTimeout(at);at=setTimeout(searchAddons,350)};
+const addonPage=$('#addons');
+['dragenter','dragover'].forEach(ev=>addonPage.addEventListener(ev,e=>{e.preventDefault();$('#mod-drop')?.classList.add('drag')}));
+['dragleave','drop'].forEach(ev=>addonPage.addEventListener(ev,e=>{e.preventDefault();$('#mod-drop')?.classList.remove('drag')}));
+addonPage.addEventListener('drop',e=>{const files=[...(e.dataTransfer?.files||[])].filter(f=>/\.jar$/i.test(f.name));if(files.length)addLocalFiles(files);else if(e.dataTransfer?.files?.length)toast('Only .jar mod files are supported here.')});
+
+
+/* ---- user profiles ---- */
+const synced=()=>S.apiUrl&&user&&!user.offline;
+async function syncQuiet(){if(!synced())return;const r=await jogurt.community({action:'sync'});if(r.ok&&$('#sync-status'))$('#sync-status').textContent='Published just now'}
+function renderUser(d,me){
+  const st=d.stats||{},L=st.launcher,sp=st.sp,servers=st.servers;
+  const spMs=sp?(sp.playTicks?sp.playTicks*50:sp.spMs||0):0;
+  const tiles=[];
+  if(L)tiles.push(['Playtime',dur(L.totalMs)],['Launches',fmt(L.launches)]);
+  if(sp)tiles.push(['Worlds',fmt(sp.worlds)],['Singleplayer',dur(spMs)],['Deaths',fmt(sp.deaths)],['Mobs killed',fmt(sp.mobKills)],['Blocks mined',fmt(sp.mined)]);
+  const v=S.visibility||{};
+  const tgl=(k,l)=>`<div class="set" style="padding:8px 0"><span>${l}</span><div class="sw ${v[k]!==false?'on':''}" data-vis="${k}"></div></div>`;
+  $('#uview').innerHTML=`
+  <div class="card"><div class="uhead"><img class="body" src="https://mc-heads.net/body/${esc(d.uuid)}/120" alt=""><div style="flex:1;min-width:0"><h2>${esc(d.name)}${me?'<span class="badge">You</span>':''}</h2>
+  ${me?`<textarea id="bio" rows="2" maxlength="200" placeholder="Write something about yourself...">${esc(S.bio||'')}</textarea>`:`<p class="muted" style="margin-top:6px">${esc(d.bio||'No bio yet.')}</p>`}
+  ${d.createdAt?`<p class="muted" style="margin-top:6px">Joined ${new Date(d.createdAt).toLocaleDateString()}</p>`:''}</div></div></div>
+  ${me?`<h3>Who can see what</h3><div class="card">${tgl('servers','Server stats')}${tgl('singleplayer','Singleplayer stats')}${tgl('modpacks','My public modpacks')}<div class="row" style="margin-top:10px;justify-content:space-between"><span class="muted" id="sync-status">${synced()?'Not published yet':'Community server not connected'}</span><button class="btn sm" id="publish">Publish profile</button></div></div>`:''}
+  <div class="tiles">${tiles.map(t=>`<div class="tile"><b>${esc(t[1])}</b><span>${t[0]}</span></div>`).join('')}</div>
+  ${servers?`<h3>Servers visited</h3><div class="card">${servers.length?`<table class="tbl"><tr><th>Server</th><th>Visits</th><th>Time</th><th>Last seen</th></tr>${servers.map(s=>`<tr><td>${esc(s.host)}</td><td>${fmt(s.visits)}</td><td>${dur(s.ms)}</td><td>${s.last?new Date(s.last).toLocaleDateString():'-'}</td></tr>`).join('')}</table>`:'<p class="muted">No servers yet. Join one and it shows up here.</p>'}</div>`:(me?'':'<p class="muted">Server stats are private.</p>')}
+  <h3>${me?'Your public modpacks':'Modpacks'}</h3>
+  ${(d.modpacks||[]).length?(d.modpacks).map((m,i)=>`<div class="card mod"><div class="ph"></div><div class="t"><b>${esc(m.name)}</b><span>${esc(m.version)} · ${m.loader==='vanilla'?'Vanilla':'Fabric'} · ${m.modpack?'Modpack: '+esc(m.modpack.title):(m.mods||[]).length+' mods'} · ${(m.packs||[]).length} resource packs</span></div>${me?'':`<button class="ghost" data-addpack="${i}">Add to my modpacks</button>`}</div>`).join(''):`<p class="muted">${me?'None yet. On the Play page open a modpack\'s ⋯ menu and choose Make public.':'Nothing public.'}</p>`}`;
+  tagStagger($('#profile'));
+  if(me){
+    $('#bio').onchange=e=>{save({bio:e.target.value});syncQuiet()};
+    $$('[data-vis]').forEach(el=>el.onclick=()=>{const k=el.dataset.vis,nv={...S.visibility,[k]:S.visibility[k]===false};save({visibility:nv});el.classList.toggle('on',nv[k]);syncQuiet()});
+    $('#publish').onclick=async()=>{const b=$('#publish');b.disabled=true;const r=await jogurt.community({action:'sync'});b.disabled=false;if(r.ok){$('#sync-status').textContent=r.data.created?'Profile created and published!':'Published just now'}else toast(r.error)};
+  }else{
+    $$('[data-addpack]').forEach(b=>b.onclick=()=>{const m=d.modpacks[+b.dataset.addpack],id=uid();S.profiles.push({id,name:m.name,version:m.version,loader:m.loader,ram:m.modpack?6:4,perks:{},extraMods:m.mods||[],extraPacks:m.packs||[],public:false,modpack:m.modpack||null});save({profiles:S.profiles,active:id});refreshAll();toast(`"${m.name}" added. Open Play and press Play to download it.`)});
+  }
+}
+async function loadMe(){
+  viewing=null;
+  $('#me-banner').innerHTML=!S.apiUrl?'<div class="notice">The community server is not available yet, so profiles are only visible to you. Your stats are still tracked on this PC.</div>':user.offline?'<div class="notice">You are offline. Profile publishing resumes when you are back online.</div>':'';
+  const st=await jogurt.myStats();
+  renderUser({name:user.name,uuid:user.uuid,stats:{launcher:{totalMs:st.totalMs,launches:st.launches},servers:st.servers,sp:st.sp},modpacks:S.profiles.filter(p=>p.public).map(shared)},true);
+}
+async function viewUser(name){
+  const r=await jogurt.community({action:'get',name});
+  if(!r.ok){toast(r.error);return}
+  viewing=name;renderUser(r.data,false);
+}
+let ut;async function searchUsers(){
+  const r=await jogurt.community({action:'search',q:$('#uq').value.trim()});
+  $('#u-results').innerHTML=r.ok?r.data.users.map(u=>`<div class="ubtn" data-n="${esc(u.name)}"><img src="https://mc-heads.net/avatar/${esc(u.uuid)}/48" alt="">${esc(u.name)}</div>`).join('')||'<span class="muted">No players found.</span>':`<span class="muted">${esc(r.error)}</span>`;
+}
+$('#u-results').onclick=e=>{const b=e.target.closest('[data-n]');if(b)viewUser(b.dataset.n)};
+$('#uq').oninput=()=>{clearTimeout(ut);ut=setTimeout(searchUsers,350)};
+$('#me-btn').onclick=loadMe;
+
+/* ---- 3D skin ---- */
+function setAnim(k){
+  if(!viewer)return;
+  viewer.animation=k==='walk'?new skinview3d.WalkingAnimation():k==='run'?new skinview3d.RunningAnimation():k==='fly'?new skinview3d.FlyingAnimation():
+  new skinview3d.FunctionAnimation((pl,t)=>{
+    const w=Math.sin(t*2);
+    pl.position.y=w*1.8;pl.rotation.x=0;
+    pl.skin.head.rotation.x=Math.sin(t)*.06;pl.skin.head.rotation.y=Math.sin(t*.7)*.25;
+    pl.skin.leftArm.rotation.z=.08+w*.07;pl.skin.rightArm.rotation.z=-.08-w*.07;
+    pl.skin.leftArm.rotation.x=Math.sin(t)*.05;pl.skin.rightArm.rotation.x=-Math.sin(t)*.05;
+    pl.skin.leftLeg.rotation.x=w*.05;pl.skin.rightLeg.rotation.x=-w*.05;
+  });
+  $$('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.a===k));
+}
+$$('#seg button').forEach(b=>b.onclick=()=>setAnim(b.dataset.a));
+function initSkin(){
+  if(viewer)return;
+  viewer=new skinview3d.SkinViewer({canvas:$('#skin'),width:230,height:318});
+  viewer.fov=32;viewer.zoom=.82;viewer.autoRotate=true;viewer.autoRotateSpeed=.5;
+  viewer.controls.enableZoom=false;viewer.controls.enablePan=false;setAnim('float');
+}
+async function loadSkin(s){s=s||await jogurt.skin();if(s){skinModel=s.model;viewer.loadSkin(s.data,{model:s.model})}}
+$('#chskin').onclick=async()=>{const r=await jogurt.changeSkin(skinModel);if(r.ok){loadSkin(r.skin);toast('Skin updated!')}else if(!r.canceled)toast(r.error)};
+
+/* ---- updates ---- */
+function showBanner(u){
+  const b=$('#upd');
+  b.style.display='flex';
+  b.innerHTML=`<div style="display:flex;flex-direction:column;gap:2px;min-width:0"><b style="color:var(--g)">Update v${esc(u.version)}</b><span class="muted" style="font-size:12px">You have v${esc(u.current||VER)}. Restart installs it.</span></div><button class="btn sm" id="upd-go">Update now</button><button class="ghost sm" id="upd-later">Later</button>`;
+  $('#upd-go').onclick=()=>doUpdate(u);
+  $('#upd-later').onclick=()=>{b.style.display='none'};
+  try{toast('Jogurt Client v'+u.version+' is available')}catch{}
+}
+async function doUpdate(u){
+  $('#updating').style.display='flex';
+  $('#upd').style.display='none';
+  const r=await jogurt.applyUpdate({url:u.url,page:u.page});
+  if(!r.ok){$('#updating').style.display='none';toast(r.manual?'Opened the download page for v'+u.version+'.':(r.error||'Update failed'));showBanner(u)}
+}
+async function checkUpdates(manual){
+  const u=await jogurt.checkUpdate();
+  const statusEl=$('#upd-status');
+  if(statusEl){
+    statusEl.textContent=({
+      available:`Version ${u.version} is available (you have v${u.current||VER})`,
+      latest:`You are up to date (v${VER})`,
+      unconfigured:'Set an update source (GitHub owner/repo with releases) in config or owner settings',
+      dev:'Updates only work in the packaged app',
+      error:u.error||'Check failed'
+    })[u.status]||'';
+  }
+  if(u.status==='available'){
+    // Always notify; auto-update downloads immediately unless user opened Settings check
+    showBanner(u);
+    if(S.autoUpdate!==false && !manual) await doUpdate(u);
+  } else if(manual && u.status==='latest'){
+    try{toast('You are up to date (v'+VER+')')}catch{}
+  }
+}
+
+jogurt.on('update-progress',p=>$('#ubar').style.width=(p*100)+'%');
+
+/* ---- startup / login ---- */
+async function enter(u){
+  user=u;$('#login').style.display='none';
+  $('#offline').style.display=u.offline?'':'none';
+  $('#avatar').src=`https://mc-heads.net/avatar/${u.uuid}/64`;$('#avatar').title=u.name;
+  $('#pname').textContent=u.name;$('#acct').textContent=(u.offline?'Offline as ':'Signed in as ')+u.name;
+  const [init,vers]=await Promise.all([jogurt.init(),jogurt.versions()]);
+  S=init.settings;PERKS=init.perks;V=vers;VER=init.version;$('#ver-tag').textContent='v'+VER;$('#root').textContent=init.root;
+  applyTheme(S.theme||'jogurt');
+  $('#sw-discord').classList.toggle('on',S.discord!==false);$('#sw-ui').classList.toggle('on',S.ingameUi!==false);
+  jogurt.discordInfo().then(i=>dcShow(S.discord===false?'off':i.status));
+  $('#sw-jvm').classList.toggle('on',S.jvmflags);$('#sw-fs').classList.toggle('on',S.fullscreen);$('#sw-snap').classList.toggle('on',S.snapshots);$('#sw-auto').classList.toggle('on',S.autoUpdate!==false);
+  const owner=init.owner;$('#row-update').style.display=$('#row-api').style.display=owner?'':'none';
+  $('#repo').value=S.updateRepo||'';$('#api').value=S.apiUrl||'';
+  if(!P().version&&V.versions.length)patchP({version:V.versions[0],loader:supportsFabric(V.versions[0])?'fabric':'vanilla'});
+  refreshAll();go('play');initSkin();loadSkin();
+  syncQuiet(); // signs new players up and keeps stats fresh
+}
+$('#signin').onclick=async()=>{
+  $('#signin').disabled=true;$('#err').textContent='';
+  const r=await jogurt.login();
+  if(r.ok)enter(r.user);else{$('#err').textContent=r.error;$('#signin').disabled=false}
+};
+$('#out').onclick=async()=>{await jogurt.logout();user=null;$('#login').style.display='flex';$('#signin').disabled=false};
+$('#ram').oninput=e=>{patchP({ram:+e.target.value});chips()};
+const sw=(id,key,after)=>$(id).onclick=()=>{const cur=(key==='discord'||key==='ingameUi')?S[key]!==false:!!S[key];save({[key]:!cur});$(id).classList.toggle('on',!cur);if(after)after()};
+const DC={connected:['ok','Connected. Showing on your Discord profile.'],connecting:['warn','Connecting to Discord...'],nodiscord:['warn','Discord is not running. It connects by itself once you open it.'],noid:['warn','No Discord app ID set yet (config.json > discordClientId).'],error:['warn','Discord refused the connection. Check Settings > Activity Privacy in Discord.'],off:['','Off']};
+function dcShow(st){const [c,t]=DC[st]||DC.off;$('#dc-status').innerHTML=`<i class="dot ${c}"></i>${t}`}
+jogurt.on('discord-status',st=>dcShow(S.discord===false?'off':st));
+sw('#sw-discord','discord',()=>{if(S.discord===false)dcShow('off');else{dcShow('connecting');jogurt.discordInfo().then(i=>dcShow(i.status))}});
+sw('#sw-ui','ingameUi',()=>toast(S.ingameUi===false?'Jogurt in-game theme is off. Minecraft looks vanilla next launch.':'Jogurt in-game theme is on. You will see it next launch.',true));
+sw('#sw-jvm','jvmflags',chips);sw('#sw-fs','fullscreen');sw('#sw-auto','autoUpdate');
+sw('#sw-snap','snapshots',async()=>{V=await jogurt.versions();fillVersions()});
+$('#repo').onchange=e=>save({updateRepo:e.target.value.trim()});
+$('#api').onchange=e=>{save({apiUrl:e.target.value.trim()});syncQuiet()};
+$('#chk').onclick=()=>{const r=$('#repo');if(r&&r.value)save({updateRepo:r.value.trim()});const s=$('#upd-status');if(s)s.textContent='Checking…';checkUpdates(true)};
+$('#open').onclick=()=>jogurt.openFolder();
+jogurt.on('log',log);
+jogurt.on('settings',s=>{S=s;refreshAll()});
+jogurt.on('synced',()=>{if($('#profile').classList.contains('on')&&!viewing)loadMe()});
+jogurt.on('progress',p=>{$('#prog').classList.toggle('on',!!p.text);$('#ptext').textContent=p.text;$('#pbar').style.width=p.pct+'%'});
+jogurt.on('state',s=>{const b=$('#play-btn'),l=b.querySelector('.lbl');if(s==='playing'){b.classList.remove('busy');b.disabled=true;l.textContent='Playing...'}else{b.disabled=false;b.classList.remove('busy');l.textContent='Play'}});
+
+/* ---- click ripples ---- */
+const RIP='.btn,.ghost,nav button,.seg button,.tabs button,.perk,.prof,.theme,.ubtn,.mbox button,.csel-btn,.csel-opt,.menu summary';
+document.addEventListener('pointerdown',e=>{
+  if(e.button)return;const t=e.target.closest&&e.target.closest(RIP);
+  if(!t||t.disabled||t.classList.contains('dis'))return;
+  const r=t.getBoundingClientRect(),size=Math.max(r.width,r.height)*2.3;
+  let w=t.querySelector(':scope>.rip-wrap');if(!w){w=document.createElement('span');w.className='rip-wrap';t.prepend(w)}
+  const s=document.createElement('span');s.className='rip';
+  s.style.cssText=`width:${size}px;height:${size}px;left:${e.clientX-r.left-size/2}px;top:${e.clientY-r.top-size/2}px`;
+  w.appendChild(s);s.addEventListener('animationend',()=>s.remove());
+},{passive:true});
+
+/* ---- themed dropdowns ---- */
+function csel(sel){
+  const w=document.createElement('div');w.className='csel';w.style.width=sel.style.width;
+  sel.parentNode.insertBefore(w,sel);w.appendChild(sel);sel.style.display='none';
+  const btn=document.createElement('button');btn.type='button';btn.className='csel-btn';
+  btn.innerHTML='<span class="cl"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
+  const list=document.createElement('div');list.className='csel-list';w.append(btn,list);
+  const close=()=>w.classList.remove('open');
+  sel._refresh=()=>{
+    btn.querySelector('.cl').textContent=(sel.options[sel.selectedIndex]||{}).text||'';btn.disabled=sel.disabled;
+    list.innerHTML=[...sel.options].map((o,i)=>`<div class="csel-opt${i===sel.selectedIndex?' on':''}${o.disabled?' dis':''}" data-i="${i}">${esc(o.text)}</div>`).join('');
+  };
+  btn.onclick=()=>{
+    const open=!w.classList.contains('open');$$('.csel.open').forEach(x=>x.classList.remove('open'));
+    if(open){sel._refresh();w.classList.add('open');const on=list.querySelector('.on');if(on)list.scrollTop=on.offsetTop-list.clientHeight/2+on.offsetHeight/2}
+  };
+  list.onclick=e=>{const o=e.target.closest('.csel-opt');if(!o)return;sel.selectedIndex=+o.dataset.i;sel._refresh();close();sel.dispatchEvent(new Event('change'))};
+  document.addEventListener('pointerdown',e=>{if(!w.contains(e.target))close()});
+  btn.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+  sel._refresh();
+}
+csel($('#ver'));csel($('#loader'));
+
+/* ---- floating particles on the sign-in screen ---- */
+(()=>{const b=$('#bokeh');for(let i=0;i<18;i++){const s=document.createElement('span'),z=24+Math.random()*70;
+  s.style.cssText=`left:${Math.random()*100}%;width:${z}px;height:${z}px;--dx:${(Math.random()-.5)*160}px;animation-duration:${9+Math.random()*10}s;animation-delay:${-Math.random()*16}s`;b.appendChild(s)}})();
+
+(async()=>{
+  const i=await jogurt.init();S=i.settings;applyTheme(S.theme||'jogurt');VER=i.version;
+  await checkUpdates(false);
+  const u=await jogurt.autoLogin();if(u)enter(u);
+})();
+</script></body></html>
